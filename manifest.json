@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "sahils.now-playing",
+  "name": "Now Playing",
+  "version": "1.0.0",
+  "author": "sahils",
+  "license": "MIT",
+  "description": "Music visualizer that appears in the bar while media plays, with a drop-down card for album art and playback controls. Hidden during calls.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Now Playing",
+    "description": "Live visualizer while media plays; click for art and controls.",
+    "category": "Media",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
