@@ -8,6 +8,16 @@ A tiny music visualizer for the Omarchy bar.
 - Hides 2 minutes after playback stops.
 - Hides during calls: when an app uses your mic (dictation tools like Superwhisper are ignored), or a Zoom, Teams, Google Meet or Slack huddle window is open.
 
+## Works with
+
+Any app that supports MPRIS, the Linux standard for "now playing":
+
+- Browsers: Chromium, Brave, Firefox, and other Chromium-based browsers (any site with audio or video: YouTube, SoundCloud, Spotify Web…)
+- Desktop players: Spotify, SimpMusic, VLC, Rhythmbox, and more
+- mpv: needs the `mpv-mpris` package (`omarchy pkg add mpv-mpris`)
+
+Covers work whether the player gives a file, embedded image data, or an `https://` link.
+
 ## Install
 
 Needs Omarchy 4.5+ and `cava` for the visualizer:

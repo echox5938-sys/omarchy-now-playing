@@ -62,6 +62,9 @@ function parseCava(line, bars) {
 // What to do with a player's art URL: show it as is, download it, or skip.
 function artPlan(url) {
   var u = String(url || "")
+  // mpv (mpv-mpris) embeds the cover as base64. No network; cap ~3 MB.
+  if (/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+\/=]+$/i.test(u) && u.length <= 4 * 1024 * 1024)
+    return { kind: "local", url: u }
   if (u.length > 4096) return { kind: "none" }
   // Browsers send "file:/tmp/x" (one slash); both forms are local files.
   if (/^file:\//i.test(u)) return { kind: "local", url: u }
@@ -72,7 +75,8 @@ function artPlan(url) {
 
 // curl with hard limits: HTTPS only (redirects too), 2 MB, 10 s.
 function curlCommand(url, outPath) {
-  return ["curl", "-fsS", "--proto", "=https", "--proto-redir", "=https",
+  // -L follows redirects (CDNs use them); each hop must still be https.
+  return ["curl", "-fsSL", "--proto", "=https", "--proto-redir", "=https",
     "--max-redirs", "3", "--max-filesize", "2097152", "--max-time", "10",
     "--create-dirs", "-o", outPath, "--", url]
 }

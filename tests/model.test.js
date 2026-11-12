@@ -42,7 +42,10 @@ assert.deepStrictEqual(M.parseCava("999;-5;", 2), [1, 0])
 assert.strictEqual(M.artPlan("https://i.scdn.co/image/ab").kind, "download")
 assert.strictEqual(M.artPlan("file:///tmp/a.png").kind, "local")
 assert.strictEqual(M.artPlan("file:/tmp/nowplaying_artwork_1.tmp").kind, "local")
-for (const bad of ["http://x/a.png", "data:image/png;base64,AA", "https://x/a b",
+assert.strictEqual(M.artPlan("data:image/png;base64,iVBORw0KGgo=").kind, "local")
+assert.strictEqual(M.artPlan("data:image/jpeg;base64," + "A".repeat(10000)).kind, "local")
+for (const bad of ["http://x/a.png", "data:text/html;base64,AA", "data:image/svg+xml;base64,AA",
+                   "data:image/png;base64,AA<script>", "data:image/png;base64," + "A".repeat(5 * 1024 * 1024),"https://x/a b",
                    "https://x/\n", "-o/etc/passwd", "https://x/" + "a".repeat(5000)])
   assert.strictEqual(M.artPlan(bad).kind, "none", bad)
 

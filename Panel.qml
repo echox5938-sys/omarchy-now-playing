@@ -34,6 +34,15 @@ Panel {
   readonly property bool playing: player !== null && player.isPlaying
   onPlayerChanged: if (player) lastKey = String(player.dbusName)
 
+  // Players differ: some only report CanPlay/CanPause, not toggle.
+  readonly property bool canPlayPause: !!(player && (player.canPlay || player.canPause || player.canTogglePlaying))
+  function playPause() {
+    if (!player) return
+    if (player.isPlaying && player.canPause) player.pause()
+    else if (!player.isPlaying && player.canPlay) player.play()
+    else if (player.canTogglePlaying) player.togglePlaying()
+  }
+
   // Fallback for players that leave Metadata out of GetAll (SimpMusic): ask
   // for that one property over D-Bus, locally. Quickshell's own data wins as
   // soon as the player sends it (next track), so this only fills the gap.
@@ -191,7 +200,7 @@ Panel {
       id: keys
       anchors.fill: parent
       onCloseRequested: root.close()
-      onActivateRequested: if (root.player && root.player.canTogglePlaying) root.player.togglePlaying()
+      onActivateRequested: root.playPause()
       // Ctrl+, previous / Ctrl+. next. Card-only, so no global keybind clashes.
       onTextKey: function(text, modifiers) {
         if (!root.player || !(modifiers & Qt.ControlModifier)) return
@@ -301,8 +310,8 @@ Panel {
         PanelActionButton {
           iconText: root.playing ? "󰏤" : "󰐊"; tooltipText: root.playing ? "Pause" : "Play"
           fontSize: Style.space(26)
-          enabled: !!(root.player && root.player.canTogglePlaying)
-          onClicked: root.player.togglePlaying()
+          enabled: root.canPlayPause
+          onClicked: root.playPause()
         }
         PanelActionButton {
           iconText: "󰒭"; tooltipText: "Next"
