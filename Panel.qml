@@ -69,14 +69,18 @@ Panel {
   onShownChanged: if (!shown && opened) close()
 
   visible: shown
-  implicitWidth: shown ? bars.implicitWidth + Style.space(12) : 0
-  implicitHeight: bar ? bar.barSize : Style.space(24)
+  // Works on top/bottom bars and on left/right (vertical) bars.
+  readonly property bool vertical: bar ? bar.vertical === true : false
+  readonly property real thickness: bar ? bar.barSize : Style.space(24)
+  implicitWidth: !shown ? 0 : vertical ? thickness : bars.implicitWidth + Style.space(12)
+  implicitHeight: !shown ? 0 : vertical ? Style.space(28) : thickness
 
   // --- Visualizer ------------------------------------------------------
   Process {
     id: cava
     running: root.shown && root.playing
-    command: ["cava", "-p", String(Qt.resolvedUrl("cava.conf")).replace(/^file:\/\//, "")]
+    // Decoded, so an install path with spaces still works.
+    command: ["cava", "-p", decodeURIComponent(String(Qt.resolvedUrl("cava.conf")).replace(/^file:\/\//, ""))]
     stdout: SplitParser { onRead: function(line) { root.levels = Model.parseCava(line, root.barCount) } }
     onRunningChanged: if (!running) root.levels = [0, 0, 0, 0, 0, 0]
   }
@@ -89,8 +93,8 @@ Panel {
       model: root.barCount
       Rectangle {
         required property int index
-        readonly property real maxH: root.height * 0.55
-        width: Style.space(3)
+        readonly property real maxH: Math.min(root.width, root.height) * 0.55
+        width: root.vertical ? Style.space(2) : Style.space(3)
         // At rest each bar is a dot.
         height: Math.max(width, root.levels[index] * maxH)
         radius: width / 2
@@ -110,7 +114,7 @@ Panel {
 
   // --- Album art -------------------------------------------------------
   readonly property string artUrl: player ? String(player.trackArtUrl || "") : ""
-  readonly property string artDir: Quickshell.env("HOME") + "/.cache/sahils-now-playing"
+  readonly property string artDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/sahils-now-playing"
   property string artSource: ""
   property int artSerial: 0
   property string artPending: ""
@@ -156,6 +160,14 @@ Panel {
     // Both sizes include the card's padding and border; the helpers add them.
     contentWidth: card.fittedContentWidth(Style.space(260))
     contentHeight: card.fittedContentHeight(cardColumn.implicitHeight)
+    focusTarget: keys
+
+    // Esc closes the card, like Omarchy's own panels.
+    PanelKeyCatcher {
+      id: keys
+      anchors.fill: parent
+      onCloseRequested: root.close()
+    }
 
     Column {
       id: cardColumn
