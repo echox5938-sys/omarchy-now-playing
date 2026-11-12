@@ -11,6 +11,17 @@ assert(!M.isMeetingWindow("Slack", "general | Workspace"))
 assert(!M.isMeetingWindow("spotify", "Spotify Premium"))
 assert(!M.isMeetingWindow("", ""))
 
+// Dictation and our visualizer are not calls; anything else is
+assert(!M.isCallCapture("cava"))
+assert(!M.isCallCapture("superwhisper-capture"))
+assert(M.isCallCapture("Chromium input"))
+
+// Progress
+assert.strictEqual(M.progress(30, 120), 0.25)
+assert.strictEqual(M.progress(500, 120), 1)
+assert.strictEqual(M.progress(10, 0), 0)
+assert.strictEqual(M.progress(NaN, 100), 0)
+
 // cava frames
 assert.deepStrictEqual(M.parseCava("100;50;0;0;0;0;", 6), [1, 0.5, 0, 0, 0, 0])
 assert.deepStrictEqual(M.parseCava("junk", 3), [0, 0, 0])

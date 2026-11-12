@@ -11,6 +11,20 @@ function isMeetingWindow(cls, title) {
   return MEETING_CLASS.test(c) || MEETING_TITLE.test(t)
 }
 
+// Mic users that are not calls: our own visualizer and dictation.
+var NOT_A_CALL = ["cava", "superwhisper-capture"]
+
+function isCallCapture(nodeName) {
+  return NOT_A_CALL.indexOf(String(nodeName || "")) === -1
+}
+
+// Song progress as 0..1; 0 when the player gives no usable length.
+function progress(position, length) {
+  var p = Number(position), l = Number(length)
+  if (!isFinite(p) || !isFinite(l) || l <= 0) return 0
+  return Math.max(0, Math.min(1, p / l))
+}
+
 // cava raw ascii frame: "12;40;7;0;3;9;" -> [0..1] per bar, bad input -> [].
 function parseCava(line, bars) {
   var parts = String(line || "").split(";")
@@ -42,5 +56,6 @@ function curlCommand(url, outPath) {
 
 if (typeof module !== "undefined") module.exports = {
   isMeetingWindow: isMeetingWindow, parseCava: parseCava,
+  isCallCapture: isCallCapture, progress: progress,
   artPlan: artPlan, curlCommand: curlCommand
 }

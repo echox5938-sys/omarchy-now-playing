@@ -43,14 +43,14 @@ Panel {
   Timer { id: lingerTimer; interval: root.lingerMs; onTriggered: root.lingering = false }
 
   // --- Meeting guard ---------------------------------------------------
-  // A capture stream other than our own cava means the mic (or camera) is
-  // in use. Only isStream/isSink/name are read: reading .properties on
+  // A capture stream other than cava or dictation means a call has the mic
+  // (or camera). Only isStream/isSink/name are read: reading .properties on
   // capture streams can destabilize Quickshell (see omarchy audio panel).
   readonly property bool micInUse: {
     var nodes = Pipewire.nodes ? Pipewire.nodes.values : []
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i]
-      if (n && n.isStream && !n.isSink && String(n.name) !== "cava") return true
+      if (n && n.isStream && !n.isSink && Model.isCallCapture(n.name)) return true
     }
     return false
   }
@@ -95,7 +95,8 @@ Panel {
         height: Math.max(width, root.levels[index] * maxH)
         radius: width / 2
         anchors.verticalCenter: parent.verticalCenter
-        color: root.barForeground
+        // Follows the theme's accent, so it changes with `omarchy theme set`.
+        color: Commons.Color.accent
         opacity: root.playing ? 1 : 0.5
       }
     }
@@ -222,6 +223,27 @@ Panel {
         text: root.player ? (root.player.trackArtist || root.player.identity || "") : ""
         font.pixelSize: Style.font.body
         opacity: 0.7
+      }
+
+      // Thin progress line. MPRIS doesn't push position, so ask once a second.
+      Rectangle {
+        width: parent.width
+        height: Style.space(3)
+        radius: height / 2
+        color: Qt.rgba(root.barForeground.r, root.barForeground.g, root.barForeground.b, 0.15)
+        visible: !!(root.player && root.player.lengthSupported && root.player.length > 0)
+        Rectangle {
+          width: parent.width * Model.progress(root.player ? root.player.position : 0,
+                                               root.player ? root.player.length : 0)
+          height: parent.height
+          radius: parent.radius
+          color: Commons.Color.accent
+        }
+        Timer {
+          interval: 1000; repeat: true; triggeredOnStart: true
+          running: root.opened && root.playing
+          onTriggered: if (root.player) root.player.positionChanged()
+        }
       }
 
       Row {
