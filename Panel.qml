@@ -168,6 +168,12 @@ Panel {
       anchors.fill: parent
       onCloseRequested: root.close()
       onActivateRequested: if (root.player && root.player.canTogglePlaying) root.player.togglePlaying()
+      // Ctrl+, previous / Ctrl+. next. Card-only, so no global keybind clashes.
+      onTextKey: function(text, modifiers) {
+        if (!root.player || !(modifiers & Qt.ControlModifier)) return
+        if (text === "," && root.player.canGoPrevious) root.player.previous()
+        else if (text === "." && root.player.canGoNext) root.player.next()
+      }
     }
 
     Column {

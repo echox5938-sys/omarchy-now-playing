@@ -4,7 +4,7 @@ A tiny music visualizer for the Omarchy bar.
 
 - Appears only while media plays (any MPRIS app: Spotify, browsers, YouTube apps, VLC…).
 - Bars move with the sound and use your theme's accent colour.
-- Click it for a card with album art, a scrolling title, a progress line, and ⏮ ⏯ ⏭. Space plays/pauses, Esc closes.
+- Click it for a card with album art, a scrolling title, a progress line, and ⏮ ⏯ ⏭. Space plays/pauses, Ctrl+, previous, Ctrl+. next, Esc closes (only while the card is open).
 - Hides 2 minutes after playback stops.
 - Hides during calls: when an app uses your mic (dictation tools like Superwhisper are ignored), or a Zoom, Teams, Google Meet or Slack huddle window is open.
 
