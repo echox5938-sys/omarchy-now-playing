@@ -26,7 +26,8 @@ function parseCava(line, bars) {
 function artPlan(url) {
   var u = String(url || "")
   if (u.length > 4096) return { kind: "none" }
-  if (/^file:\/\//i.test(u)) return { kind: "local", url: u }
+  // Browsers send "file:/tmp/x" (one slash); both forms are local files.
+  if (/^file:\//i.test(u)) return { kind: "local", url: u }
   // No whitespace/control chars: curl gets it as one argv entry, never a shell.
   if (/^https:\/\/[^\s\x00-\x1f\x7f]+$/i.test(u)) return { kind: "download", url: u }
   return { kind: "none" }

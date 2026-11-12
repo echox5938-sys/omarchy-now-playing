@@ -152,8 +152,9 @@ Panel {
     owner: root
     bar: root.bar
     open: root.opened
-    contentWidth: Style.space(260)
-    contentHeight: cardColumn.implicitHeight
+    // Both sizes include the card's padding and border; the helpers add them.
+    contentWidth: card.fittedContentWidth(Style.space(260))
+    contentHeight: card.fittedContentHeight(cardColumn.implicitHeight)
 
     Column {
       id: cardColumn
@@ -184,11 +185,37 @@ Panel {
         }
       }
 
-      Plain {
+      // Long titles scroll: pause, slide to the end, pause, jump back.
+      Item {
+        id: titleBox
         width: parent.width
-        text: root.player ? (root.player.trackTitle || "Unknown title") : ""
-        font.pixelSize: Style.font.subtitle
-        font.bold: true
+        height: titleText.implicitHeight
+        clip: true
+        readonly property real overflow: Math.max(0, titleText.implicitWidth - width)
+
+        Plain {
+          id: titleText
+          elide: Text.ElideNone
+          text: root.player ? (root.player.trackTitle || "Unknown title") : ""
+          font.pixelSize: Style.font.subtitle
+          font.bold: true
+          onTextChanged: x = 0
+        }
+
+        SequentialAnimation {
+          running: root.opened && titleBox.overflow > 0
+          loops: Animation.Infinite
+          onRunningChanged: if (!running) titleText.x = 0
+          PauseAnimation { duration: 1500 }
+          NumberAnimation {
+            target: titleText; property: "x"
+            to: -titleBox.overflow
+            // Constant reading speed: about 40 px a second.
+            duration: Style.duration(titleBox.overflow * 25)
+          }
+          PauseAnimation { duration: 1500 }
+          PropertyAction { target: titleText; property: "x"; value: 0 }
+        }
       }
       Plain {
         width: parent.width

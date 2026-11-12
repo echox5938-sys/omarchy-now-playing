@@ -19,6 +19,7 @@ assert.deepStrictEqual(M.parseCava("999;-5;", 2), [1, 0])
 // Art: https downloads, file passes, everything else refused
 assert.strictEqual(M.artPlan("https://i.scdn.co/image/ab").kind, "download")
 assert.strictEqual(M.artPlan("file:///tmp/a.png").kind, "local")
+assert.strictEqual(M.artPlan("file:/tmp/nowplaying_artwork_1.tmp").kind, "local")
 for (const bad of ["http://x/a.png", "data:image/png;base64,AA", "https://x/a b",
                    "https://x/\n", "-o/etc/passwd", "https://x/" + "a".repeat(5000)])
   assert.strictEqual(M.artPlan(bad).kind, "none", bad)
