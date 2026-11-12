@@ -5,3 +5,4 @@
 - 2026-11-12: Real visualizer via cava (official repo). Why: bars should follow the actual music.
 - 2026-11-12: Allow album-art downloads (HTTPS only, size-capped). Why: want Spotify covers; accepted the outside contact.
 - 2026-11-12: Hide during meetings = mic in use OR meeting app open. Why: never pop up in a call.
+- 2026-11-12: Bar spot = left section, right after workspaces. Why: user's choice.
