@@ -19,6 +19,13 @@ omarchy plugin add https://github.com/echox5938-sys/omarchy-now-playing.git --en
 
 Without `cava` it still works; the bars just stay as dots.
 
+## Remove
+
+```bash
+omarchy plugin remove sahils.now-playing
+rm -rf ~/.cache/sahils-now-playing   # cached album art
+```
+
 ## Network
 
 The plugin only goes online for album art, and only when the player gives an
