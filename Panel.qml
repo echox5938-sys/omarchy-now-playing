@@ -162,11 +162,12 @@ Panel {
     contentHeight: card.fittedContentHeight(cardColumn.implicitHeight)
     focusTarget: keys
 
-    // Esc closes the card, like Omarchy's own panels.
+    // Esc closes the card; Space (or Enter) plays/pauses.
     PanelKeyCatcher {
       id: keys
       anchors.fill: parent
       onCloseRequested: root.close()
+      onActivateRequested: if (root.player && root.player.canTogglePlaying) root.player.togglePlaying()
     }
 
     Column {
