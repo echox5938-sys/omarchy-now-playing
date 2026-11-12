@@ -22,6 +22,17 @@ assert.strictEqual(M.progress(500, 120), 1)
 assert.strictEqual(M.progress(10, 0), 0)
 assert.strictEqual(M.progress(NaN, 100), 0)
 
+// busctl metadata fallback
+const meta = M.parseBusctlMetadata('{"type":"a{sv}","data":{"xesam:title":{"type":"s","data":"Long Nights"},"xesam:artist":{"type":"as","data":["Asthenic","B"]},"mpris:artUrl":{"type":"s","data":"file:/tmp/a.tmp"}}}')
+assert.deepStrictEqual(meta, { title: "Long Nights", artist: "Asthenic, B", artUrl: "file:/tmp/a.tmp" })
+assert.strictEqual(M.parseBusctlMetadata("not json"), null)
+assert.strictEqual(M.parseBusctlMetadata('{"data":5}'), null)
+assert.strictEqual(M.parseBusctlMetadata('{"data":{"xesam:title":{"data":{"x":1}}}}').title, "")
+assert(M.isMprisBusName("org.mpris.MediaPlayer2.SimpMusic"))
+assert(M.isMprisBusName("org.mpris.MediaPlayer2.chromium.instance123"))
+assert(!M.isMprisBusName("--user"))
+assert(!M.isMprisBusName("org.mpris.MediaPlayer2.x y"))
+
 // cava frames
 assert.deepStrictEqual(M.parseCava("100;50;0;0;0;0;", 6), [1, 0.5, 0, 0, 0, 0])
 assert.deepStrictEqual(M.parseCava("junk", 3), [0, 0, 0])

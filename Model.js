@@ -25,6 +25,29 @@ function progress(position, length) {
   return Math.max(0, Math.min(1, p / l))
 }
 
+// Some players (SimpMusic) leave Metadata out of GetAll, so Quickshell starts
+// with no title. `busctl --json=short get-property ... Metadata` still works;
+// this reads its output. Bad or oversized input -> null.
+function parseBusctlMetadata(text) {
+  var raw = String(text || "")
+  if (raw.length > 65536) return null
+  var json
+  try { json = JSON.parse(raw) } catch (e) { return null }
+  var d = json && json.data
+  if (!d || typeof d !== "object") return null
+  function str(key) {
+    var v = d[key] && d[key].data
+    if (Array.isArray(v)) v = v.join(", ")
+    return typeof v === "string" ? v.slice(0, 500) : ""
+  }
+  return { title: str("xesam:title"), artist: str("xesam:artist"), artUrl: str("mpris:artUrl") }
+}
+
+// Only real MPRIS bus names go to busctl.
+function isMprisBusName(name) {
+  return /^org\.mpris\.MediaPlayer2\.[A-Za-z0-9_.\-]{1,200}$/.test(String(name || ""))
+}
+
 // cava raw ascii frame: "12;40;7;0;3;9;" -> [0..1] per bar, bad input -> [].
 function parseCava(line, bars) {
   var parts = String(line || "").split(";")
@@ -57,5 +80,6 @@ function curlCommand(url, outPath) {
 if (typeof module !== "undefined") module.exports = {
   isMeetingWindow: isMeetingWindow, parseCava: parseCava,
   isCallCapture: isCallCapture, progress: progress,
+  parseBusctlMetadata: parseBusctlMetadata, isMprisBusName: isMprisBusName,
   artPlan: artPlan, curlCommand: curlCommand
 }

@@ -34,6 +34,30 @@ Panel {
   readonly property bool playing: player !== null && player.isPlaying
   onPlayerChanged: if (player) lastKey = String(player.dbusName)
 
+  // Fallback for players that leave Metadata out of GetAll (SimpMusic): ask
+  // for that one property over D-Bus, locally. Quickshell's own data wins as
+  // soon as the player sends it (next track), so this only fills the gap.
+  property var fallback: ({ title: "", artist: "", artUrl: "" })
+  readonly property string probeName: player && !player.trackTitle && Model.isMprisBusName(player.dbusName)
+    ? String(player.dbusName) : ""
+  onProbeNameChanged: {
+    fallback = { title: "", artist: "", artUrl: "" }
+    if (!probeName) return
+    metaProbe.command = ["busctl", "--user", "--json=short", "get-property", probeName,
+      "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "Metadata"]
+    metaProbe.running = true
+  }
+  Process {
+    id: metaProbe
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var meta = Model.parseBusctlMetadata(text)
+        if (meta && root.probeName) root.fallback = meta
+      }
+    }
+  }
+
   // Stays for two minutes after playback stops.
   property bool lingering: false
   onPlayingChanged: {
@@ -113,7 +137,7 @@ Panel {
   }
 
   // --- Album art -------------------------------------------------------
-  readonly property string artUrl: player ? String(player.trackArtUrl || "") : ""
+  readonly property string artUrl: player ? String(player.trackArtUrl || fallback.artUrl || "") : ""
   readonly property string artDir: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/sahils-now-playing"
   property string artSource: ""
   property int artSerial: 0
@@ -216,7 +240,7 @@ Panel {
         Plain {
           id: titleText
           elide: Text.ElideNone
-          text: root.player ? (root.player.trackTitle || "Unknown title") : ""
+          text: root.player ? (root.player.trackTitle || root.fallback.title || "Unknown title") : ""
           font.pixelSize: Style.font.subtitle
           font.bold: true
           onTextChanged: x = 0
@@ -239,7 +263,7 @@ Panel {
       }
       Plain {
         width: parent.width
-        text: root.player ? (root.player.trackArtist || root.player.identity || "") : ""
+        text: root.player ? (root.player.trackArtist || root.fallback.artist || root.player.identity || "") : ""
         font.pixelSize: Style.font.body
         opacity: 0.7
       }
