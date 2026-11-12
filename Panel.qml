@@ -100,6 +100,9 @@ Panel {
 
   readonly property bool shown: player !== null && (playing || lingering) && !micInUse && !meetingOpen
   onShownChanged: if (!shown && opened) close()
+  // A keybind can ask for the card while nothing plays; ignore it then.
+  // Next tick: closing in the same tick as opening is ignored.
+  onOpenedChanged: if (opened && !shown) Qt.callLater(function() { if (root.opened && !root.shown) root.close() })
 
   visible: shown
   // Works on top/bottom bars and on left/right (vertical) bars.
